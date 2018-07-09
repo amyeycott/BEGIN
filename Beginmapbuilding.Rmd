@@ -1,0 +1,23 @@
+---
+title: "BEGIN plotmaps 2007-2014"
+output: pdf_document
+documentclass: article
+classoption: a4paper
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height=6, fig.width = 8, warning=FALSE)
+knitr::read_chunk("Begin_plotmaps.R")
+```
+
+## BEGIN is cool
+
+These are fancy BEGIN plotmaps for taxonomic harmonisation. They are the data 2007-2010 and 2012-2014. 2011 is missing.
+
+```{r Maps, include="false", fig.keep="none"}
+```
+
+```{r ???????, echo="false"}
+
+```
+

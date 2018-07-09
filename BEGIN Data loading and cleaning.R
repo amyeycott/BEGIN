@@ -1,4 +1,8 @@
 #This is a new data loading script for loading BEGIN data started by Amy in July 2018. We need to decide how much we can correct in the original files and how much to do in script. They're our files but there are some copies drifting around.
+
+#corrections done by hand. In 2007-2010, the first cell title is changed (had contained forbidden symbols), and D81-0 changed to D8-10
+
+
 library(tidyverse)
 library(lubridate)
 library(readxl)
@@ -48,13 +52,18 @@ vegdata_2017<-blankrowkiller(vegdata_2017)
 #### new objects ####
 dirtymerge2007_2017<-bind_rows(veg2007_2010, vegdata_2012, vegdata_2013, vegdata_2014, vegdata_2015, vegdata_2016, vegdata_2017)
 dirtymerge2007_2017<-select(dirtymerge2007_2017, -c("Vascular", "mosses", "litter", "bare", "X__1", "X__2", "VASCSUM","CF TOTVASC", "BRYOSUM", "CF TOTBRYO"))
-dirtymerge2007_2017<-dirtymerge2007_2017[is.na(dirtymerge2007_2017$Block),]
+
 dirtymerge2007_2017$Plot_year[is.na(dirtymerge2007_2017$Plot_year)]<-paste(dirtymerge2007_2017$Block[is.na(dirtymerge2007_2017$Plot_year)], dirtymerge2007_2017$Plot[is.na(dirtymerge2007_2017$Plot_year)], "-", substr(dirtymerge2007_2017$Year[is.na(dirtymerge2007_2017$Plot_year)], 3,4), sep = "")#we need year_plot for any ordinations but separate year, block, plot for any modelling
+dirtymerge2007_2017$Plot[is.na(dirtymerge2007_2017$Plot)]<-gsub("-", "", substr(dirtymerge2007_2017$Plot_year[is.na(dirtymerge2007_2017$Plot)], 2,3))#Note this turns NA into AN!
+dirtymerge2007_2017<-dirtymerge2007_2017[!(dirtymerge2007_2017$Plot)=="AN",]#done here as the only place where it doesn't drop 2007-2010 data but the Year replacement doesn't break because of NAs.
+dirtymerge2007_2017$Year[is.na(dirtymerge2007_2017$Year)]<-gsub("-", "", regmatches(x=dirtymerge2007_2017$Plot_year[is.na(dirtymerge2007_2017$Year)], regexpr("(-)\\d\\d", dirtymerge2007_2017$Plot_year[is.na(dirtymerge2007_2017$Year)])))# a very ugly way to extract the year but the first parts are of different lengths so...
+dirtymerge2007_2017$Block[is.na(dirtymerge2007_2017$Block)]<-substr(dirtymerge2007_2017$Plot_year[is.na(dirtymerge2007_2017$Block)],1,1)
 
-names(dirty)
-
-
-#little things for data improvement, kill once data is ready
+names(dirtymerge2007_2017)
+      #little things for data improvement, kill once data is ready
 firstlist<-sort(names(dirtymerge2007_2017)) #2011 has some y's, so will need converting to numeric before it can be used here
 #write.csv(firstlist, "Species_list_first_glance.csv")
 dirtymerge2007_2017[!(is.na(dirtymerge2007_2017$`Anthriscus sylvestris`)),c("Plot_year", "Block", "Plot", "Year")]
+
+BeginThinDraft<-dirtymerge2007_2017 %>% select(-c(Site, Plot_year)) %>% gather(key="Species", value="Cover", -c(Plot, Block, Year)) 
+BeginThinDraft$Cover[is.na(BeginThinDraft$Cover)]<-0
